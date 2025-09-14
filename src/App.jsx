@@ -8,7 +8,9 @@ import { Badge } from '@/components/ui/badge.jsx'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.jsx'
 import { Separator } from '@/components/ui/separator.jsx'
 import { ScrollArea } from '@/components/ui/scroll-area.jsx'
+
 import './App.css'
+import './components/HighlightedTextarea.css'
 
 function App() {
   // État pour les données des templates
@@ -108,41 +110,61 @@ function App() {
     
     let result = text
     Object.entries(variables).forEach(([varName, value]) => {
-      const regex = new RegExp(`{{${varName}}}`, 'g')
-      result = result.replace(regex, value || `{{${varName}}}`)
+      const regex = new RegExp(`<<${varName}>>`, 'g')
+      result = result.replace(regex, value || `<<${varName}>>`)
     })
     return result
   }
 
   // Initialiser les variables quand un template est sélectionné
   useEffect(() => {
-    if (selectedTemplate && templatesData) {
+    if (selectedTemplate && templatesData && templatesData.variables) {
       const initialVars = {}
-      selectedTemplate.variables.forEach(varName => {
-        const varInfo = templatesData.variables[varName]
-        if (varInfo) {
-          initialVars[varName] = varInfo.example || ''
-        }
-      })
+      if (selectedTemplate.variables && Array.isArray(selectedTemplate.variables)) {
+        selectedTemplate.variables.forEach(varName => {
+          const varInfo = templatesData.variables[varName]
+          if (varInfo) {
+            initialVars[varName] = varInfo.example || ''
+          }
+        })
+      }
       setVariables(initialVars)
       
       // Mettre à jour les versions finales avec les variables remplacées
-      const subjectWithVars = replaceVariables(selectedTemplate.subject[templateLanguage] || '')
-      const bodyWithVars = replaceVariables(selectedTemplate.body[templateLanguage] || '')
+      const subjectWithVars = replaceVariables(selectedTemplate.subject?.[templateLanguage] || '')
+      const bodyWithVars = replaceVariables(selectedTemplate.body?.[templateLanguage] || '')
       setFinalSubject(subjectWithVars)
       setFinalBody(bodyWithVars)
     }
-  }, [selectedTemplate, templateLanguage])
+  }, [selectedTemplate, templateLanguage, templatesData])
 
   // Mettre à jour les versions finales quand les variables changent
   useEffect(() => {
-    if (selectedTemplate) {
-      const subjectWithVars = replaceVariables(selectedTemplate.subject[templateLanguage] || '')
-      const bodyWithVars = replaceVariables(selectedTemplate.body[templateLanguage] || '')
+    if (selectedTemplate && selectedTemplate.subject && selectedTemplate.body) {
+      const subjectWithVars = replaceVariables(selectedTemplate.subject?.[templateLanguage] || '')
+      const bodyWithVars = replaceVariables(selectedTemplate.body?.[templateLanguage] || '')
       setFinalSubject(subjectWithVars)
       setFinalBody(bodyWithVars)
     }
-  }, [variables, selectedTemplate, templateLanguage])
+  }, [variables, selectedTemplate, templateLanguage, templatesData])
+
+  // Fonction pour détecter les variables dans le texte
+  const hasVariables = (text) => {
+    return text && text.includes('<<') && text.includes('>>')
+  }
+
+  // Effet pour ajouter des attributs data aux textareas avec variables
+  useEffect(() => {
+    const subjectTextarea = document.querySelector('textarea[placeholder*="Objet"], textarea[placeholder*="Subject"]')
+    const bodyTextarea = document.querySelector('textarea[placeholder*="Corps"], textarea[placeholder*="Message body"]')
+    
+    if (subjectTextarea) {
+      subjectTextarea.setAttribute('data-has-variables', hasVariables(finalSubject))
+    }
+    if (bodyTextarea) {
+      bodyTextarea.setAttribute('data-has-variables', hasVariables(finalBody))
+    }
+  }, [finalSubject, finalBody])
 
   // Copier le contenu dans le presse-papiers
   const copyToClipboard = async () => {
@@ -498,7 +520,7 @@ function App() {
                     <CardContent className="p-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {selectedTemplate.variables.map((varName) => {
-                          const varInfo = templatesData.variables[varName]
+                          const varInfo = templatesData?.variables?.[varName]
                           if (!varInfo) return null
 
                           const isValid = variables[varName] && variables[varName].trim() !== ''
@@ -556,7 +578,7 @@ function App() {
                       <Textarea
                         value={finalSubject}
                         onChange={(e) => setFinalSubject(e.target.value)}
-                        className="min-h-[60px] border-2 border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all duration-300 resize-none"
+                        className="min-h-[60px] border-2 border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all duration-300 resize-none modern-editor-font variable-highlighting"
                         placeholder={t.subject}
                       />
                     </div>
@@ -568,7 +590,7 @@ function App() {
                       <Textarea
                         value={finalBody}
                         onChange={(e) => setFinalBody(e.target.value)}
-                        className="min-h-[200px] border-2 border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all duration-300"
+                        className="min-h-[200px] border-2 border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all duration-300 modern-editor-font variable-highlighting"
                         placeholder={t.body}
                       />
                     </div>

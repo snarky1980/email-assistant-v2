@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -116,5 +117,81 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+
+/* Amélioration de la typographie globale */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  font-variant-numeric: oldstyle-nums;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Amélioration des champs de saisie */
+input, textarea, .modern-editor-font {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  letter-spacing: -0.01em;
+}
+
+/* Amélioration des titres */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  letter-spacing: -0.02em;
+}
+
+/* Styles spécifiques pour les labels */
+label {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* Amélioration de la lisibilité des boutons */
+button {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* Styles pour les éléments de sélection */
+select {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Styles pour la mise en évidence des variables dans les textareas */
+.variable-highlighting {
+  position: relative;
+}
+
+.variable-highlighting::placeholder {
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Effet visuel pour indiquer la présence de variables */
+.variable-highlighting:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 0 0 1px rgba(59, 130, 246, 0.2);
+}
+
+/* Style pour les variables détectées (effet visuel subtil) */
+.variable-highlighting[data-has-variables="true"] {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.1) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+/* Amélioration de l'espacement et de la lisibilité */
+.card-content {
+  line-height: 1.6;
+}
+
+/* Optimisation pour les écrans haute résolution */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  body, input, textarea, button {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
