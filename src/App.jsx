@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator.jsx'
 import { ScrollArea } from '@/components/ui/scroll-area.jsx'
 
+import RichTextEditor from './components/RichTextEditor.jsx'
 import './App.css'
-import './components/HighlightedTextarea.css'
+import './components/RichTextEditor.css'
 
 function App() {
   // État pour les données des templates
@@ -530,24 +531,23 @@ function App() {
                               <label className="text-sm font-semibold text-gray-700 flex items-center">
                                 <span 
                                   className={`inline-block w-3 h-3 rounded-full mr-2 ${
-                                    varInfo.type === 'number' ? 'bg-blue-400' :
-                                    varInfo.type === 'amount' ? 'bg-purple-400' :
-                                    varInfo.type === 'date' ? 'bg-green-400' :
-                                    varInfo.type === 'time' ? 'bg-red-400' :
+                                    varInfo.format === 'number' ? 'bg-blue-400' :
+                                    varInfo.format === 'date' ? 'bg-green-400' :
+                                    varInfo.format === 'time' ? 'bg-red-400' :
                                     'bg-gray-400'
                                   }`}
                                 />
-                                {varInfo.label[interfaceLanguage]}
+                                {varInfo.description[interfaceLanguage] || varName}
                               </label>
                               <Input
-                                type={varInfo.type === 'number' || varInfo.type === 'amount' ? 'number' : 'text'}
+                                type={varInfo.format === 'number' ? 'number' : varInfo.format === 'date' ? 'date' : varInfo.format === 'time' ? 'time' : 'text'}
                                 placeholder={varInfo.example}
                                 value={variables[varName] || ''}
                                 onChange={(e) => setVariables(prev => ({
                                   ...prev,
                                   [varName]: e.target.value
                                 }))}
-                                className={`border-2 transition-all duration-300 ${
+                                className={`border-2 transition-all duration-300 modern-editor-font ${
                                   isValid 
                                     ? 'border-green-300 bg-green-50 focus:border-green-400' 
                                     : 'border-gray-200 focus:border-blue-400'
@@ -575,11 +575,12 @@ function App() {
                   <CardContent className="p-6 space-y-6">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">{t.subject}</label>
-                      <Textarea
+                      <RichTextEditor
                         value={finalSubject}
                         onChange={(e) => setFinalSubject(e.target.value)}
-                        className="min-h-[60px] border-2 border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all duration-300 resize-none modern-editor-font variable-highlighting"
+                        className="w-full"
                         placeholder={t.subject}
+                        minHeight="60px"
                       />
                     </div>
                     
@@ -587,11 +588,12 @@ function App() {
                     
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">{t.body}</label>
-                      <Textarea
+                      <RichTextEditor
                         value={finalBody}
                         onChange={(e) => setFinalBody(e.target.value)}
-                        className="min-h-[200px] border-2 border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all duration-300 modern-editor-font variable-highlighting"
+                        className="w-full"
                         placeholder={t.body}
+                        minHeight="200px"
                       />
                     </div>
                   </CardContent>
