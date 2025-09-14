@@ -9,9 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator.jsx'
 import { ScrollArea } from '@/components/ui/scroll-area.jsx'
 
-import RichTextEditor from './components/RichTextEditor.jsx'
+import SimpleEditor from './components/SimpleEditor.jsx'
 import './App.css'
-import './components/RichTextEditor.css'
+import './components/SimpleEditor.css'
 
 function App() {
   // État pour les données des templates
@@ -575,7 +575,7 @@ function App() {
                   <CardContent className="p-6 space-y-6">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">{t.subject}</label>
-                      <RichTextEditor
+                      <SimpleEditor
                         value={finalSubject}
                         onChange={(e) => setFinalSubject(e.target.value)}
                         className="w-full"
@@ -588,7 +588,7 @@ function App() {
                     
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">{t.body}</label>
-                      <RichTextEditor
+                      <SimpleEditor
                         value={finalBody}
                         onChange={(e) => setFinalBody(e.target.value)}
                         className="w-full"
