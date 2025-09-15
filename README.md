@@ -139,6 +139,23 @@ pnpm run build
 # Les fichiers de production se trouvent dans le dossier 'dist/'
 ```
 
+### Troubleshooting Déploiement
+
+Si vous rencontrez des problèmes de déploiement :
+
+1. **Erreurs de dépendances** : Assurez-vous d'utiliser pnpm v8+ et Node.js 18+
+2. **Échec de build** : Vérifiez que toutes les dépendances sont compatibles avec React 19
+3. **GitHub Pages non disponible** : Activez GitHub Pages dans les paramètres du repository et sélectionnez "GitHub Actions" comme source
+
+```bash
+# Installation correcte des dépendances
+pnpm install --no-frozen-lockfile
+
+# Test local
+pnpm run lint  # Doit passer sans erreurs
+pnpm run build # Doit créer le dossier dist/
+```
+
 ### Configuration GitHub Pages
 1. Aller dans Settings > Pages dans le repository GitHub
 2. Sélectionner "GitHub Actions" comme source
