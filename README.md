@@ -128,7 +128,9 @@ Chaque push sur la branche `main` déclenche automatiquement :
 
 ### URL de déploiement
 L'application sera accessible à l'adresse :
-`https://snarky1980.github.io/email-assistant-v2/`
+**`https://snarky1980.github.io/email-assistant-v2/`**
+
+⚠️ **Note importante**: Si vous obtenez une erreur 404, attendez quelques minutes après le déploiement car GitHub Pages peut prendre du temps à se mettre à jour.
 
 ### Déploiement manuel
 Pour déployer manuellement :
@@ -143,9 +145,11 @@ pnpm run build
 
 Si vous rencontrez des problèmes de déploiement :
 
-1. **Erreurs de dépendances** : Assurez-vous d'utiliser pnpm v8+ et Node.js 18+
+1. **Erreurs de dépendances** : Assurez-vous d'utiliser pnpm v10+ et Node.js 18+
 2. **Échec de build** : Vérifiez que toutes les dépendances sont compatibles avec React 19
 3. **GitHub Pages non disponible** : Activez GitHub Pages dans les paramètres du repository et sélectionnez "GitHub Actions" comme source
+4. **URL ne fonctionne pas** : Attendez 5-10 minutes après le déploiement, GitHub Pages peut prendre du temps
+5. **Erreur 404 sur l'application** : L'application utilise des scripts de redirection pour supporter les routes React, assurez-vous que JavaScript est activé
 
 ```bash
 # Installation correcte des dépendances
@@ -154,7 +158,15 @@ pnpm install --no-frozen-lockfile
 # Test local
 pnpm run lint  # Doit passer sans erreurs
 pnpm run build # Doit créer le dossier dist/
+
+# Test en local de la version de production
+pnpm run preview:prod
 ```
+
+**🔧 Résolution des problèmes fréquents :**
+- **"Multiple versions of pnpm specified"** : Le workflow GitHub Actions est maintenant configuré pour pnpm v10
+- **Routes React ne fonctionnent pas** : Le fichier 404.html gère maintenant la redirection des routes SPA
+- **Assets non trouvés** : La configuration base: `/email-assistant-v2/` est correctement configurée
 
 ### Configuration GitHub Pages
 1. Aller dans Settings > Pages dans le repository GitHub
