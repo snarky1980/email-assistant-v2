@@ -9,9 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator.jsx'
 import { ScrollArea } from '@/components/ui/scroll-area.jsx'
 
-import SimpleEditor from './components/SimpleEditor.jsx'
+import SyntaxHighlightEditor from './components/SyntaxHighlightEditor.jsx'
 import './App.css'
-import './components/SimpleEditor.css'
+import './components/SyntaxHighlightEditor.css'
 
 function App() {
   // État pour les données des templates
@@ -575,12 +575,13 @@ function App() {
                   <CardContent className="p-6 space-y-6">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">{t.subject}</label>
-                      <SimpleEditor
+                      <SyntaxHighlightEditor
                         value={finalSubject}
-                        onChange={(e) => setFinalSubject(e.target.value)}
+                        onChange={setFinalSubject}
                         className="w-full"
                         placeholder={t.subject}
-                        minHeight="60px"
+                        style={{ minHeight: '60px' }}
+                        rows={2}
                       />
                     </div>
                     
@@ -588,12 +589,13 @@ function App() {
                     
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">{t.body}</label>
-                      <SimpleEditor
+                      <SyntaxHighlightEditor
                         value={finalBody}
-                        onChange={(e) => setFinalBody(e.target.value)}
+                        onChange={setFinalBody}
                         className="w-full"
                         placeholder={t.body}
-                        minHeight="200px"
+                        style={{ minHeight: '200px' }}
+                        rows={8}
                       />
                     </div>
                   </CardContent>
