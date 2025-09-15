@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator.jsx'
 import { ScrollArea } from '@/components/ui/scroll-area.jsx'
 
-// Removed complex editor imports - using simple approach
+import VariableDetector from './components/VariableDetector.jsx'
 import './App.css'
 
 function App() {
@@ -574,42 +574,28 @@ function App() {
                   <CardContent className="p-6 space-y-6">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">{t.subject}</label>
-                      <div className="relative">
-                        <Textarea
-                          value={finalSubject}
-                          onChange={(e) => setFinalSubject(e.target.value)}
-                          className="w-full font-inter"
-                          placeholder={t.subject}
-                          style={{ minHeight: '60px' }}
-                          rows={2}
-                        />
-                        {(finalSubject.includes('<<') && finalSubject.includes('>>')) && (
-                          <div className="absolute top-2 right-2 bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full border border-yellow-300">
-                            🔸 Variables détectées
-                          </div>
-                        )}
-                      </div>
+                      <VariableDetector
+                        value={finalSubject}
+                        onChange={setFinalSubject}
+                        placeholder={t.subject}
+                        className="w-full"
+                        style={{ minHeight: '60px' }}
+                        rows={2}
+                      />
                     </div>
                     
                     <Separator className="bg-gradient-to-r from-green-200 to-emerald-200" />
                     
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">{t.body}</label>
-                      <div className="relative">
-                        <Textarea
-                          value={finalBody}
-                          onChange={(e) => setFinalBody(e.target.value)}
-                          className="w-full font-inter"
-                          placeholder={t.body}
-                          style={{ minHeight: '200px' }}
-                          rows={8}
-                        />
-                        {(finalBody.includes('<<') && finalBody.includes('>>')) && (
-                          <div className="absolute top-2 right-2 bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full border border-yellow-300">
-                            🔸 Variables détectées
-                          </div>
-                        )}
-                      </div>
+                      <VariableDetector
+                        value={finalBody}
+                        onChange={setFinalBody}
+                        placeholder={t.body}
+                        className="w-full"
+                        style={{ minHeight: '200px' }}
+                        rows={8}
+                      />
                     </div>
                   </CardContent>
                 </Card>
