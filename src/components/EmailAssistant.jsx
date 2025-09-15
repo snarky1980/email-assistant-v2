@@ -14,7 +14,7 @@
  * @version 1.0.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import EmailForm from './EmailForm';
 import EmailPreview from './EmailPreview';
 import TemplateSelector from './TemplateSelector';
@@ -68,7 +68,7 @@ const EmailAssistant = () => {
   /**
    * Génère l'email final basé sur le modèle et les données du formulaire
    */
-  const generateEmail = () => {
+  const generateEmail = useCallback(() => {
     if (!selectedTemplate) return;
 
     let emailContent = selectedTemplate.content;
@@ -84,7 +84,7 @@ const EmailAssistant = () => {
     emailContent += '\n\n' + signature;
 
     setGeneratedEmail(emailContent);
-  };
+  }, [selectedTemplate, formData]);
 
   /**
    * Retourne la signature appropriée selon le niveau d'urgence
@@ -123,7 +123,7 @@ const EmailAssistant = () => {
     if (selectedTemplate && formData.clientName) {
       generateEmail();
     }
-  }, [selectedTemplate, formData]);
+  }, [selectedTemplate, formData, generateEmail]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">

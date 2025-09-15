@@ -64,17 +64,26 @@ Une application React moderne pour la gestion et la génération de modèles de 
 
 ```bash
 # Cloner le repository
-git clone https://github.com/VOTRE-USERNAME/email-assistant.git
-cd email-assistant
+git clone https://github.com/snarky1980/email-assistant-v2.git
+cd email-assistant-v2
 
-# Installer les dépendances
-npm install
+# Installer les dépendances (pnpm recommandé)
+pnpm install
+# ou avec npm
+npm install --legacy-peer-deps
 
 # Lancer en développement
+pnpm run dev
+# ou avec npm
 npm run dev
 
 # Construire pour production
+pnpm run build
+# ou avec npm
 npm run build
+
+# Prévisualiser la build de production
+pnpm run preview:prod
 ```
 
 ## 🔧 Modification des Modèles
@@ -111,10 +120,72 @@ Les modèles d'email se trouvent dans `src/assets/complete_email_templates.json`
 
 Ce projet est configuré pour un déploiement automatique sur GitHub Pages via GitHub Actions.
 
+### Configuration automatique
 Chaque push sur la branche `main` déclenche automatiquement :
-1. Installation des dépendances
-2. Build de production
+1. Installation des dépendances avec pnpm
+2. Build de production optimisé
 3. Déploiement sur GitHub Pages
+
+### URL de déploiement
+L'application sera accessible à l'adresse :
+`https://snarky1980.github.io/email-assistant-v2/`
+
+### Déploiement manuel
+Pour déployer manuellement :
+```bash
+# Build de production
+pnpm run build
+
+# Les fichiers de production se trouvent dans le dossier 'dist/'
+```
+
+### Troubleshooting Déploiement
+
+Si vous rencontrez des problèmes de déploiement :
+
+1. **Erreurs de dépendances** : Assurez-vous d'utiliser pnpm v8+ et Node.js 18+
+2. **Échec de build** : Vérifiez que toutes les dépendances sont compatibles avec React 19
+3. **GitHub Pages non disponible** : Activez GitHub Pages dans les paramètres du repository et sélectionnez "GitHub Actions" comme source
+
+```bash
+# Installation correcte des dépendances
+pnpm install --no-frozen-lockfile
+
+# Test local
+pnpm run lint  # Doit passer sans erreurs
+pnpm run build # Doit créer le dossier dist/
+```
+
+### Configuration GitHub Pages
+1. Aller dans Settings > Pages dans le repository GitHub
+2. Sélectionner "GitHub Actions" comme source
+3. Le workflow de déploiement sera automatiquement détecté
+
+## 🔧 Dépannage
+
+### Problèmes de dépendances
+Si vous rencontrez des erreurs lors de l'installation :
+```bash
+# Utiliser pnpm (recommandé)
+pnpm install --no-frozen-lockfile
+
+# Ou avec npm et legacy peer deps
+npm install --legacy-peer-deps
+
+# Effacer le cache si nécessaire
+npm cache clean --force
+```
+
+### Problèmes de build
+Si le build échoue :
+```bash
+# Vérifier la version de Node.js (v18+ recommandé)
+node --version
+
+# Réinstaller les dépendances
+rm -rf node_modules pnpm-lock.yaml
+pnpm install
+```
 
 ## 📝 Licence
 
