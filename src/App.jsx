@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { loadState, saveState } from '@/utils/storage';
 import { Search, FileText, Copy, RotateCcw, Languages, Filter, Globe, Sparkles, Mail, Edit3, Link } from 'lucide-react'
 import { Button } from '@/components/ui/button.jsx'
@@ -161,6 +161,94 @@ function App() {
     }
   }, [templatesData]) // Se déclenche quand les templates sont chargés
 
+  // Filtrer les modèles selon la recherche et la catégorie
+  const filteredTemplates = useMemo(() => {
+    if (!templatesData) return []
+    let filtered = templatesData.templates
+
+    if (searchQuery) {
+      filtered = filtered.filter(template => 
+        template.title[templateLanguage]?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        template.description[templateLanguage]?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        template.category.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(template => template.category === selectedCategory)
+    }
+
+    return filtered
+  }, [templatesData, searchQuery, selectedCategory, templateLanguage])
+
+  // Obtenir les catégories uniques
+  const categories = useMemo(() => {
+    if (!templatesData) return []
+    const cats = [...new Set(templatesData.templates.map(t => t.category))]
+    return cats
+  }, [templatesData])
+
+  // Remplacer les variables dans le texte
+  const replaceVariables = useCallback((text) => {
+    let result = text
+    Object.entries(variables).forEach(([varName, value]) => {
+      const regex = new RegExp(`<<${varName}>>`, 'g')
+      result = result.replace(regex, value || `<<${varName}>>`)
+    })
+    return result
+  }, [variables])
+
+  /**
+   * 📋 FONCTION DE COPIE GRANULAIRE
+   * Permet de copier différentes parties de l'email selon le besoin de l'utilisateur
+   * 
+   * @param {string} type - Type de contenu à copier ('subject', 'body', 'all')
+   */
+  const copyToClipboard = useCallback(async (type = 'all') => {
+    let content = ''
+    
+    // 🎯 Sélection du contenu selon le type demandé
+    switch (type) {
+      case 'subject':
+        content = finalSubject
+        break
+      case 'body':
+        content = finalBody
+        break
+      case 'all':
+      default:
+        content = `${finalSubject}\n\n${finalBody}`
+        break
+    }
+    
+    try {
+      // 🔒 Méthode moderne et sécurisée (HTTPS requis)
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(content)
+      } else {
+        // 🔄 Fallback pour navigateurs anciens ou contextes non-sécurisés
+        const textArea = document.createElement('textarea')
+        textArea.value = content
+        textArea.style.position = 'fixed'
+        textArea.style.left = '-999999px'
+        textArea.style.top = '-999999px'
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+        document.execCommand('copy')
+        textArea.remove()
+      }
+      
+      // ✅ Feedback visuel de succès (2 secondes)
+      setCopySuccess(true)
+      setTimeout(() => setCopySuccess(false), 2000)
+    } catch (error) {
+      console.error('Erreur lors de la copie:', error)
+      // 🚨 Gestion d'erreur avec message utilisateur
+      alert('Erreur lors de la copie. Veuillez sélectionner le texte manuellement et utiliser Ctrl+C.')
+    }
+  }, [finalSubject, finalBody])
+
   /**
    * ⌨️ RACCOURCIS CLAVIER POUR UNE UX PROFESSIONNELLE
    * 
@@ -201,44 +289,7 @@ function App() {
     // 🎯 Attacher les événements clavier globalement
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [selectedTemplate]) // Re-bind quand le template change
-
-  // Filtrer les modèles selon la recherche et la catégorie
-  const filteredTemplates = useMemo(() => {
-    if (!templatesData) return []
-    let filtered = templatesData.templates
-
-    if (searchQuery) {
-      filtered = filtered.filter(template => 
-        template.title[templateLanguage]?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        template.description[templateLanguage]?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        template.category.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    }
-
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(template => template.category === selectedCategory)
-    }
-
-    return filtered
-  }, [templatesData, searchQuery, selectedCategory, templateLanguage])
-
-  // Obtenir les catégories uniques
-  const categories = useMemo(() => {
-    if (!templatesData) return []
-    const cats = [...new Set(templatesData.templates.map(t => t.category))]
-    return cats
-  }, [templatesData])
-
-  // Remplacer les variables dans le texte
-  const replaceVariables = (text) => {
-    let result = text
-    Object.entries(variables).forEach(([varName, value]) => {
-      const regex = new RegExp(`<<${varName}>>`, 'g')
-      result = result.replace(regex, value || `<<${varName}>>`)
-    })
-    return result
-  }
+  }, [selectedTemplate, copyToClipboard]) // Re-bind quand le template change
 
   /**
    * 🎨 SURBRILLANCE DES VARIABLES DANS LE TEXTE
@@ -345,7 +396,7 @@ function App() {
       setFinalSubject(subjectWithVars)
       setFinalBody(bodyWithVars)
     }
-  }, [selectedTemplate, templateLanguage])
+  }, [selectedTemplate, templateLanguage, templatesData])
 
   // Mettre à jour les versions finales quand les variables changent
   useEffect(() => {
@@ -368,51 +419,6 @@ function App() {
    * - Corps (vert) : Pour coller le contenu principal sans l'objet
    * - Tout (gradient) : Copie complète avec objet + corps (comportement original)
    */
-  const copyToClipboard = async (type = 'all') => {
-    let content = ''
-    
-    // 🎯 Sélection du contenu selon le type demandé
-    switch (type) {
-      case 'subject':
-        content = finalSubject
-        break
-      case 'body':
-        content = finalBody
-        break
-      case 'all':
-      default:
-        content = `${finalSubject}\n\n${finalBody}`
-        break
-    }
-    
-    try {
-      // 🔒 Méthode moderne et sécurisée (HTTPS requis)
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(content)
-      } else {
-        // 🔄 Fallback pour navigateurs anciens ou contextes non-sécurisés
-        const textArea = document.createElement('textarea')
-        textArea.value = content
-        textArea.style.position = 'fixed'
-        textArea.style.left = '-999999px'
-        textArea.style.top = '-999999px'
-        document.body.appendChild(textArea)
-        textArea.focus()
-        textArea.select()
-        document.execCommand('copy')
-        textArea.remove()
-      }
-      
-      // ✅ Feedback visuel de succès (2 secondes)
-      setCopySuccess(true)
-      setTimeout(() => setCopySuccess(false), 2000)
-    } catch (error) {
-      console.error('Erreur lors de la copie:', error)
-      // 🚨 Gestion d'erreur avec message utilisateur
-      alert('Erreur lors de la copie. Veuillez sélectionner le texte manuellement et utiliser Ctrl+C.')
-    }
-  }
-
   /**
    * 🔗 FONCTION DE COPIE DE LIEN DIRECT
    * Génère et copie l'URL complète pour accéder directement à ce template
