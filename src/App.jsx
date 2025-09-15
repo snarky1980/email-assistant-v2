@@ -9,9 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator.jsx'
 import { ScrollArea } from '@/components/ui/scroll-area.jsx'
 
-import SyntaxHighlightEditor from './components/SyntaxHighlightEditor.jsx'
+import HybridVariableEditor from './components/HybridVariableEditor.jsx'
 import './App.css'
-import './components/SyntaxHighlightEditor.css'
 
 function App() {
   // État pour les données des templates
@@ -575,7 +574,7 @@ function App() {
                   <CardContent className="p-6 space-y-6">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">{t.subject}</label>
-                      <SyntaxHighlightEditor
+                      <HybridVariableEditor
                         value={finalSubject}
                         onChange={setFinalSubject}
                         className="w-full"
@@ -589,7 +588,7 @@ function App() {
                     
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">{t.body}</label>
-                      <SyntaxHighlightEditor
+                      <HybridVariableEditor
                         value={finalBody}
                         onChange={setFinalBody}
                         className="w-full"
