@@ -8,7 +8,7 @@ function App() {
     const loadTemplatesData = async () => {
       try {
         console.log('Tentative de chargement des templates...')
-        const response = await fetch('/email-assistant/complete_email_templates.json')
+        const response = await fetch('./complete_email_templates.json')
         console.log('Response status:', response.status)
         if (!response.ok) {
           throw new Error('Failed to load templates data')
@@ -54,4 +54,3 @@ function App() {
 }
 
 export default App
-
