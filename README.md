@@ -1,3 +1,6 @@
+# Local notes
+- Run: `npm install` then `npm run dev` (use port 5174 if 5173 is busy).
+
 # Assistant Modèles de Courriels v2
 
 Une application React moderne pour la gestion et la génération de modèles de courriels professionnels avec toutes les améliorations intégrées.
@@ -107,14 +110,42 @@ Les modèles d'email se trouvent dans `src/assets/complete_email_templates.json`
 }
 ```
 
-## 🌐 Déploiement
+## 🌐 Déploiement (GitHub Pages)
 
-Ce projet est configuré pour un déploiement automatique sur GitHub Pages via GitHub Actions.
+Déploiement automatique sur GitHub Pages via GitHub Actions pour le dépôt
+`snarky1980/email-assistant-v2`.
 
-Chaque push sur la branche `main` déclenche automatiquement :
-1. Installation des dépendances
-2. Build de production
-3. Déploiement sur GitHub Pages
+### URL du site
+- https://snarky1980.github.io/email-assistant-v2/
+
+### Prérequis
+- Le dépôt doit être public (ou plan supportant Pages pour dépôt privé)
+- Les GitHub Actions doivent être activées sur le dépôt
+- La configuration Vite utilise la base: `/email-assistant-v2/`
+
+### Déclencher un déploiement
+1. Pousser sur la branche `main` (ou cliquer sur « Run workflow » depuis l’onglet Actions)
+2. Le workflow « Deploy to GitHub Pages » va:
+   - Installer les dépendances
+   - Construire l’app (`pnpm build`)
+   - Ajouter un fallback `404.html` pour SPA
+   - Déployer sur Pages
+
+### Vérifier le déploiement
+- Onglet Actions → dernier run « Deploy to GitHub Pages »
+- Ouvrir le job `deploy` et repérer `page_url`
+- Tester l’URL: https://snarky1980.github.io/email-assistant-v2/
+
+### Paramètres GitHub Pages
+- Une fois le premier déploiement réussi, la page « Settings → Pages » affiche
+  « Source: GitHub Actions ». L’environnement `github-pages` est créé
+  automatiquement par `actions/deploy-pages`.
+
+### Dépannage rapide
+- 404 sur les routes internes: la fallback `404.html` est incluse par le workflow
+- Page blanche après déploiement: vérifier que la base Vite est bien `/email-assistant-v2/`
+- Rien ne se déploie: vérifier que vous avez poussé sur `main` et que le workflow a le statut « success »
+- URL différente: vérifiez « Settings → Pages » pour l’URL exacte exposée par GitHub
 
 ## 📝 Licence
 
@@ -135,4 +166,3 @@ Pour toute question ou problème, contactez l'équipe de développement.
 ---
 
 **Bureau de la traduction** - Assistant pour rédaction de courriels aux clients
-
