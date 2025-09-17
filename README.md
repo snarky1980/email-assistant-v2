@@ -5,10 +5,10 @@ Une application React moderne pour la génération rapide de courriels professio
 ## 🚀 Démarrer en local
 
 ```bash
-# Pré-requis: Node 20+ (recommandé)
+# Pré-requis: Node 20+
 node -v
 
-# PNPM via Corepack (activé automatiquement en CI)
+# Installer PNPM (Corepack)
 corepack enable
 
 # Installer les dépendances
@@ -96,12 +96,6 @@ Le site est publié sur GitHub Pages à: https://snarky1980.github.io/email-assi
 
 - La base Vite est `"/email-assistant-v2/"`. Conservez-la pour un routage correct sur Pages.
 - Un fallback 404 pour SPA est géré lors du déploiement.
-
-### Intégration continue (CI)
-
-- GitHub Actions utilise Node 20 et pnpm via Corepack (d’après `package.json:packageManager`).
-- Le cache est basé sur `pnpm-lock.yaml` pour accélérer les installations.
-- Pipelines: Lint + Build (Node.js CI) et déploiement sur Pages (sur `main`).
 
 ## ❗ Dépannage
 
