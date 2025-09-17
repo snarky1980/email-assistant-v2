@@ -9,7 +9,7 @@ const __dirname = dirname(__filename)
 
 // Configuration Vite pour la production
 export default defineConfig({
-  base: '/email-assistant-v2/', // Use repository name for GitHub Pages
+  base: '/email-assistant-v2/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
@@ -34,4 +34,3 @@ export default defineConfig({
     strictPort: false,
   },
 })
-

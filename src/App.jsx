@@ -3,7 +3,6 @@ import { loadState, saveState } from '@/utils/storage';
 import { Search, FileText, Copy, RotateCcw, Languages, Filter, Globe, Sparkles, Mail, Edit3, Link } from 'lucide-react'
 import { Button } from '@/components/ui/button.jsx'
 import { Input } from '@/components/ui/input.jsx'
-import { Textarea } from '@/components/ui/textarea.jsx'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx'
 import { Badge } from '@/components/ui/badge.jsx'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.jsx'
@@ -25,8 +24,9 @@ function App() {
   const [selectedTemplate, setSelectedTemplate] = useState(null)
   const [searchQuery, setSearchQuery] = useState(savedState.searchQuery || '')
   const [selectedCategory, setSelectedCategory] = useState(savedState.selectedCategory || 'all')
-  const [finalSubject, setFinalSubject] = useState('') // Version finale éditable
-  const [finalBody, setFinalBody] = useState('') // Version finale éditable
+  // Rich editor refs for inline editing (contenteditable)
+  const subjectRef = useRef(null)
+  const bodyRef = useRef(null)
   const [variables, setVariables] = useState(savedState.variables || {})
   const [copySuccess, setCopySuccess] = useState(false)
   
@@ -319,12 +319,81 @@ function App() {
             {variableValue || `<<${variableName}>>`}
           </span>
         )
+
       }
       
       // Retourner le texte normal sans modification
       return part
     })
   }
+
+  // --- Rich Editor helpers ---
+  const escapeHtml = (s) => s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+
+  const tokenRegex = /(<<[^>]+>>)/g
+
+  const templateToHtml = (text, isBody = false) => {
+    if (!text) return ''
+    const parts = text.split(tokenRegex)
+    const html = parts.map((part) => {
+      const m = part.match(/^<<([^>]+)>>$/)
+      if (m) {
+        const name = m[1]
+        const value = variables[name] || ''
+        // Render as an inline editable chip (no variable name shown)
+        return `<span class="var-chip inline px-1 py-0.5 border rounded bg-indigo-50 text-indigo-800 border-indigo-200" data-var="${escapeHtml(name)}" contenteditable="true">${escapeHtml(value)}</span>`
+      }
+      const safe = escapeHtml(part)
+      return isBody ? safe.replace(/\n/g, '<br/>') : safe
+    }).join('')
+    return html
+  }
+
+  const updateChipValuesFromVariables = (editorEl) => {
+    if (!editorEl) return
+    const chips = editorEl.querySelectorAll('span.var-chip[data-var]')
+    chips.forEach(chip => {
+      const key = chip.getAttribute('data-var')
+      const val = variables[key] || ''
+      if (chip.textContent !== val) {
+        chip.textContent = val
+      }
+    })
+  }
+
+  const readEditorPlainText = (editorEl) => {
+    if (!editorEl) return ''
+    // Convert <br> to newlines for plain text copy
+    const clone = editorEl.cloneNode(true)
+    clone.querySelectorAll('br').forEach(br => br.replaceWith('\n'))
+    clone.querySelectorAll('div,p').forEach(block => block.append('\n'))
+    return clone.textContent || ''
+  }
+
+  const handleEditorInput = (e) => {
+    // Sync variables when chips change
+    const editorEl = e.currentTarget
+    const chips = editorEl.querySelectorAll('span.var-chip[data-var]')
+    const next = { ...variables }
+    chips.forEach(chip => {
+      const key = chip.getAttribute('data-var')
+      next[key] = chip.textContent
+    })
+    setVariables(next)
+  }
+
+  const preventEnterInSubject = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+    }
+  }
+
+  // (Preview function removed; using contenteditable chips directly.)
 
   // Charger un modèle sélectionné
   useEffect(() => {
@@ -338,24 +407,20 @@ function App() {
         }
       })
       setVariables(initialVars)
-      
-      // Mettre à jour les versions finales avec les variables remplacées
-      const subjectWithVars = replaceVariables(selectedTemplate.subject[templateLanguage] || '')
-      const bodyWithVars = replaceVariables(selectedTemplate.body[templateLanguage] || '')
-      setFinalSubject(subjectWithVars)
-      setFinalBody(bodyWithVars)
+
+  // Initialiser les éditeurs riches avec les puces
+  const subjectRaw = selectedTemplate.subject[templateLanguage] || ''
+  const bodyRaw = selectedTemplate.body[templateLanguage] || ''
+  if (subjectRef.current) subjectRef.current.innerHTML = templateToHtml(subjectRaw, false)
+  if (bodyRef.current) bodyRef.current.innerHTML = templateToHtml(bodyRaw, true)
     }
   }, [selectedTemplate, templateLanguage])
 
-  // Mettre à jour les versions finales quand les variables changent
+  // Mettre à jour les puces (chips) quand les variables changent
   useEffect(() => {
-    if (selectedTemplate) {
-      const subjectWithVars = replaceVariables(selectedTemplate.subject[templateLanguage] || '')
-      const bodyWithVars = replaceVariables(selectedTemplate.body[templateLanguage] || '')
-      setFinalSubject(subjectWithVars)
-      setFinalBody(bodyWithVars)
-    }
-  }, [variables, selectedTemplate, templateLanguage])
+    updateChipValuesFromVariables(subjectRef.current)
+    updateChipValuesFromVariables(bodyRef.current)
+  }, [variables])
 
   /**
    * 📋 FONCTION DE COPIE GRANULAIRE
@@ -374,14 +439,14 @@ function App() {
     // 🎯 Sélection du contenu selon le type demandé
     switch (type) {
       case 'subject':
-        content = finalSubject
+        content = readEditorPlainText(subjectRef.current)
         break
       case 'body':
-        content = finalBody
+        content = readEditorPlainText(bodyRef.current)
         break
       case 'all':
       default:
-        content = `${finalSubject}\n\n${finalBody}`
+        content = `${readEditorPlainText(subjectRef.current)}\n\n${readEditorPlainText(bodyRef.current)}`
         break
     }
     
@@ -470,11 +535,11 @@ function App() {
       })
       setVariables(initialVars)
       
-      // Réinitialiser les versions finales
-      const subjectWithVars = replaceVariables(selectedTemplate.subject[templateLanguage] || '')
-      const bodyWithVars = replaceVariables(selectedTemplate.body[templateLanguage] || '')
-      setFinalSubject(subjectWithVars)
-      setFinalBody(bodyWithVars)
+      // Réinitialiser les éditeurs riches
+      const subjectRaw = selectedTemplate.subject[templateLanguage] || ''
+      const bodyRaw = selectedTemplate.body[templateLanguage] || ''
+      if (subjectRef.current) subjectRef.current.innerHTML = templateToHtml(subjectRaw, false)
+      if (bodyRef.current) bodyRef.current.innerHTML = templateToHtml(bodyRaw, true)
     }
   }
 
@@ -790,7 +855,7 @@ function App() {
                   </Card>
                 )}
 
-                {/* Version éditable - ZONE PRINCIPALE */}
+                {/* Version éditable - ZONE PRINCIPALE (aperçu supprimé, surlignage intégré) */}
                 <Card className="shadow-2xl border-0 bg-gradient-to-br from-white to-green-50 overflow-hidden">
                   <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
                     <CardTitle className="text-2xl font-bold text-gray-800 flex items-center">
@@ -799,57 +864,34 @@ function App() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 space-y-6">
-                    {/* Aperçu avec surbrillance des variables */}
-                    {selectedTemplate && (
-                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border-2 border-blue-200">
-                        <h4 className="text-sm font-bold text-blue-800 mb-3 flex items-center">
-                          <Sparkles className="h-4 w-4 mr-2" />
-                          Aperçu avec variables surlignées
-                        </h4>
-                        
-                        {/* Aperçu objet */}
-                        <div className="mb-4">
-                          <div className="text-xs font-semibold text-blue-700 mb-1">OBJET:</div>
-                          <div className="bg-white p-3 rounded border text-sm leading-relaxed">
-                            {highlightVariables(selectedTemplate.subject[templateLanguage] || '')}
-                          </div>
-                        </div>
-                        
-                        {/* Aperçu corps */}
-                        <div>
-                          <div className="text-xs font-semibold text-blue-700 mb-1">CORPS:</div>
-                          <div className="bg-white p-3 rounded border text-sm leading-relaxed max-h-32 overflow-y-auto">
-                            {highlightVariables(selectedTemplate.body[templateLanguage] || '')}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Objet éditable - Version ultra-compacte */}
+                    {/* Objet éditable - Rich editor inline */}
                     <div className="space-y-1">
                       <label className="text-xs font-medium text-gray-600 flex items-center">
                         <span className="w-1 h-1 bg-green-500 rounded-full mr-1.5"></span>
                         {t.subject}
                       </label>
-                      <Textarea
-                        value={finalSubject}
-                        onChange={(e) => setFinalSubject(e.target.value)}
-                        className="min-h-[28px] max-h-[28px] resize-none border border-green-300 focus:border-green-500 focus:ring-1 focus:ring-green-100 transition-all duration-300 text-sm py-1 px-2 leading-tight"
-                        placeholder={t.subject}
+                      <div
+                        ref={subjectRef}
+                        contentEditable
+                        onInput={handleEditorInput}
+                        onKeyDown={preventEnterInSubject}
+                        className="min-h-[32px] max-h-[80px] overflow-auto border border-green-300 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-100 transition-all duration-300 text-sm leading-tight rounded-md px-3 py-2 bg-white"
+                        aria-label={t.subject}
                       />
                     </div>
 
-                    {/* Corps éditable */}
+                    {/* Corps éditable - Rich editor inline */}
                     <div className="space-y-3">
                       <label className="text-lg font-bold text-gray-700 flex items-center">
                         <span className="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse"></span>
                         {t.body}
                       </label>
-                      <Textarea
-                        value={finalBody}
-                        onChange={(e) => setFinalBody(e.target.value)}
-                        className="min-h-[250px] border-3 border-green-300 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-300 text-base leading-relaxed"
-                        placeholder={t.body}
+                      <div
+                        ref={bodyRef}
+                        contentEditable
+                        onInput={handleEditorInput}
+                        className="min-h-[250px] border-3 border-green-300 focus-within:border-green-500 focus-within:ring-4 focus-within:ring-green-100 transition-all duration-300 text-base leading-relaxed rounded-md px-3 py-3 bg-white whitespace-pre-wrap"
+                        aria-label={t.body}
                       />
                     </div>
                   </CardContent>

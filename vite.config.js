@@ -14,7 +14,7 @@ const __dirname = dirname(__filename)
 // projet), nous définissons ici un port alternatif et autorisons Vite
 // à basculer automatiquement vers un autre port si nécessaire.
 export default defineConfig({
-  base: '/email-assistant-v2/', // Use repository name for GitHub Pages
+  base: '/email-assistant-v2/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
