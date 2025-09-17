@@ -1,6 +1,3 @@
-# Local notes
-- Run: `npm install` then `npm run dev` (use port 5174 if 5173 is busy).
-
 # Assistant Modèles de Courriels v2
 
 Une application React moderne pour la génération rapide de courriels professionnels à partir de modèles bilingues, avec un éditeur riche et des variables éditables inline.
@@ -8,11 +5,10 @@ Une application React moderne pour la génération rapide de courriels professio
 ## 🚀 Démarrer en local
 
 ```bash
-<<<<<<< HEAD
-# Pré-requis: Node 18+ (ou 20+ recommandé)
+# Pré-requis: Node 20+ (recommandé)
 node -v
 
-# Installer PNPM (Corepack)
+# PNPM via Corepack (activé automatiquement en CI)
 corepack enable
 
 # Installer les dépendances
@@ -27,29 +23,6 @@ pnpm build
 # Prévisualiser le build
 pnpm preview
 # Ouvrir: http://localhost:5174/email-assistant-v2/
-=======
-# Cloner le repository
-git clone https://github.com/snarky1980/email-assistant-v2.git
-cd email-assistant-v2
-
-# Installer les dépendances (pnpm recommandé)
-pnpm install
-# ou avec npm
-npm install --legacy-peer-deps
-
-# Lancer en développement
-pnpm run dev
-# ou avec npm
-npm run dev
-
-# Construire pour production
-pnpm run build
-# ou avec npm
-npm run build
-
-# Prévisualiser la build de production
-pnpm run preview:prod
->>>>>>> origin/main
 ```
 
 Notes:
@@ -104,7 +77,6 @@ Exemple minimal:
 - Copier Tout: concatène Sujet + deux sauts de ligne + Corps
 - Copier Lien: copie une URL partageable du modèle courant (avec langue et sélection)
 
-<<<<<<< HEAD
 Astuce: la copie lit le texte de l’éditeur riche (conversion en texte brut), donc ce que vous voyez est ce que vous copiez.
 
 ## 🔄 Réinitialiser
@@ -125,6 +97,12 @@ Le site est publié sur GitHub Pages à: https://snarky1980.github.io/email-assi
 - La base Vite est `"/email-assistant-v2/"`. Conservez-la pour un routage correct sur Pages.
 - Un fallback 404 pour SPA est géré lors du déploiement.
 
+### Intégration continue (CI)
+
+- GitHub Actions utilise Node 20 et pnpm via Corepack (d’après `package.json:packageManager`).
+- Le cache est basé sur `pnpm-lock.yaml` pour accélérer les installations.
+- Pipelines: Lint + Build (Node.js CI) et déploiement sur Pages (sur `main`).
+
 ## ❗ Dépannage
 
 - Page locale vide ou 404: vérifiez l’URL inclut `/email-assistant-v2/` (ex: http://localhost:5174/email-assistant-v2/)
@@ -136,74 +114,6 @@ Le site est publié sur GitHub Pages à: https://snarky1980.github.io/email-assi
 - React + Vite
 - Tailwind CSS
 - Icônes Lucide
-=======
-### Configuration automatique
-Chaque push sur la branche `main` déclenche automatiquement :
-1. Installation des dépendances avec pnpm
-2. Build de production optimisé
-3. Déploiement sur GitHub Pages
->>>>>>> origin/main
-
-### URL de déploiement
-L'application sera accessible à l'adresse :
-`https://snarky1980.github.io/email-assistant-v2/`
-
-### Déploiement manuel
-Pour déployer manuellement :
-```bash
-# Build de production
-pnpm run build
-
-# Les fichiers de production se trouvent dans le dossier 'dist/'
-```
-
-### Troubleshooting Déploiement
-
-Si vous rencontrez des problèmes de déploiement :
-
-1. **Erreurs de dépendances** : Assurez-vous d'utiliser pnpm v8+ et Node.js 18+
-2. **Échec de build** : Vérifiez que toutes les dépendances sont compatibles avec React 19
-3. **GitHub Pages non disponible** : Activez GitHub Pages dans les paramètres du repository et sélectionnez "GitHub Actions" comme source
-
-```bash
-# Installation correcte des dépendances
-pnpm install --no-frozen-lockfile
-
-# Test local
-pnpm run lint  # Doit passer sans erreurs
-pnpm run build # Doit créer le dossier dist/
-```
-
-### Configuration GitHub Pages
-1. Aller dans Settings > Pages dans le repository GitHub
-2. Sélectionner "GitHub Actions" comme source
-3. Le workflow de déploiement sera automatiquement détecté
-
-## 🔧 Dépannage
-
-### Problèmes de dépendances
-Si vous rencontrez des erreurs lors de l'installation :
-```bash
-# Utiliser pnpm (recommandé)
-pnpm install --no-frozen-lockfile
-
-# Ou avec npm et legacy peer deps
-npm install --legacy-peer-deps
-
-# Effacer le cache si nécessaire
-npm cache clean --force
-```
-
-### Problèmes de build
-Si le build échoue :
-```bash
-# Vérifier la version de Node.js (v18+ recommandé)
-node --version
-
-# Réinstaller les dépendances
-rm -rf node_modules pnpm-lock.yaml
-pnpm install
-```
 
 ## 📝 Licence
 
