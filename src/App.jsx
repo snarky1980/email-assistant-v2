@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { loadState, saveState } from '@/utils/storage';
 import { Search, FileText, Copy, RotateCcw, Languages, Filter, Globe, Sparkles, Mail, Edit3, Link } from 'lucide-react'
 import { Button } from '@/components/ui/button.jsx'
@@ -201,7 +201,7 @@ function App() {
     // 🎯 Attacher les événements clavier globalement
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [selectedTemplate]) // Re-bind quand le template change
+  }, [selectedTemplate, copyToClipboard]) // Re-bind quand le template change
 
   // Filtrer les modèles selon la recherche et la catégorie
   const filteredTemplates = useMemo(() => {
@@ -230,102 +230,7 @@ function App() {
     return cats
   }, [templatesData])
 
-  // Remplacer les variables dans le texte
-  const replaceVariables = (text) => {
-    let result = text
-    Object.entries(variables).forEach(([varName, value]) => {
-      const regex = new RegExp(`<<${varName}>>`, 'g')
-      result = result.replace(regex, value || `<<${varName}>>`)
-    })
-    return result
-  }
-
-  /**
-   * 🎨 SURBRILLANCE DES VARIABLES DANS LE TEXTE
-   * 
-   * Convertit le texte avec variables en JSX avec surbrillance colorée
-   * - Variables remplies : fond vert clair
-   * - Variables vides : fond orange clair avec bordure
-   * - Couleurs distinctes pour faciliter l'identification
-   */
-  /**
-   * 🎨 FONCTION DE SURLIGNAGE DES VARIABLES - VERSION DISCRÈTE
-   * 
-   * Applique un surlignage doux et discret aux variables dans le texte
-   * Utilise des couleurs pastel pour une meilleure lisibilité
-   * 
-   * @param {string} text - Texte contenant des variables au format <<variable>>
-   * @returns {JSX.Element[]} - Tableau d'éléments React avec surlignage
-   */
-  const highlightVariables = (text) => {
-    if (!text) return text
-    
-    /**
-     * 🎨 PALETTE DE COULEURS DISCRÈTES
-     * Couleurs pastel pour un rendu professionnel et agréable
-     */
-    const VARIABLE_COLORS = {
-      email: 'bg-blue-50 text-blue-700 border-blue-200',      // Bleu doux pour emails
-      phone: 'bg-green-50 text-green-700 border-green-200',   // Vert doux pour téléphones
-      date: 'bg-purple-50 text-purple-700 border-purple-200', // Violet doux pour dates
-      number: 'bg-amber-50 text-amber-700 border-amber-200',  // Ambre doux pour nombres
-      default: 'bg-indigo-50 text-indigo-700 border-indigo-200', // Indigo par défaut
-      unknown: 'bg-gray-50 text-gray-600 border-gray-200'     // Gris pour variables inconnues
-    }
-    
-    /**
-     * 🎯 STYLES DE BASE POUR LE SURLIGNAGE
-     * Classes Tailwind pour un rendu discret et élégant
-     */
-    const BASE_HIGHLIGHT_CLASSES = 'inline px-1.5 py-0.5 rounded text-xs font-medium border transition-all duration-200'
-    
-    // Fonction pour obtenir la couleur selon le type de variable
-    const getVariableColor = (variableName) => {
-      const variableInfo = templatesData?.variables?.[variableName]
-      
-      if (!variableInfo) {
-        return VARIABLE_COLORS.unknown
-      }
-      
-      // Retourner la couleur selon le type, ou la couleur par défaut
-      return VARIABLE_COLORS[variableInfo.type] || VARIABLE_COLORS.default
-    }
-    
-    // Diviser le texte en parties pour identifier les variables (format <<variable>>)
-    const textParts = text.split(/(<<[^>]+>>)/g)
-    
-    return textParts.map((part, index) => {
-      // Vérifier si cette partie est une variable
-      const variableMatch = part.match(/^<<([^>]+)>>$/)
-      
-      if (variableMatch) {
-        const variableName = variableMatch[1]
-        const variableValue = variables[variableName]
-        const colorClasses = getVariableColor(variableName)
-        const isEmptyValue = !variableValue || variableValue.trim() === ''
-        
-        // Classes pour l'état vide (animation pulse + bordure pointillée)
-        const emptyStateClasses = isEmptyValue ? 'animate-pulse border-dashed' : 'border-solid'
-        
-        // Tooltip informatif
-        const tooltipText = `Variable: ${variableName}${isEmptyValue ? ' (vide)' : ` = ${variableValue}`}`
-        
-        return (
-          <span
-            key={index}
-            className={`${BASE_HIGHLIGHT_CLASSES} ${colorClasses} ${emptyStateClasses}`}
-            title={tooltipText}
-          >
-            {variableValue || `<<${variableName}>>`}
-          </span>
-        )
-
-      }
-      
-      // Retourner le texte normal sans modification
-      return part
-    })
-  }
+  // (Utility functions for highlighting/replacing variables were removed as unused.)
 
   // --- Rich Editor helpers ---
   const escapeHtml = (s) => s
@@ -335,11 +240,9 @@ function App() {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
 
-  const tokenRegex = /(<<[^>]+>>)/g
-
-  const templateToHtml = (text, isBody = false) => {
+  const templateToHtml = useCallback((text, isBody = false) => {
     if (!text) return ''
-    const parts = text.split(tokenRegex)
+    const parts = text.split(/(<<[^>]+>>)/g)
     const html = parts.map((part) => {
       const m = part.match(/^<<([^>]+)>>$/)
       if (m) {
@@ -352,9 +255,9 @@ function App() {
       return isBody ? safe.replace(/\n/g, '<br/>') : safe
     }).join('')
     return html
-  }
+  }, [variables])
 
-  const updateChipValuesFromVariables = (editorEl) => {
+  const updateChipValuesFromVariables = useCallback((editorEl) => {
     if (!editorEl) return
     const chips = editorEl.querySelectorAll('span.var-chip[data-var]')
     chips.forEach(chip => {
@@ -364,7 +267,7 @@ function App() {
         chip.textContent = val
       }
     })
-  }
+  }, [variables])
 
   const readEditorPlainText = (editorEl) => {
     if (!editorEl) return ''
@@ -408,19 +311,21 @@ function App() {
       })
       setVariables(initialVars)
 
-  // Initialiser les éditeurs riches avec les puces
-  const subjectRaw = selectedTemplate.subject[templateLanguage] || ''
-  const bodyRaw = selectedTemplate.body[templateLanguage] || ''
-  if (subjectRef.current) subjectRef.current.innerHTML = templateToHtml(subjectRaw, false)
-  if (bodyRef.current) bodyRef.current.innerHTML = templateToHtml(bodyRaw, true)
+      // Initialiser les éditeurs riches avec les puces
+      const subjectRaw = selectedTemplate.subject[templateLanguage] || ''
+      const bodyRaw = selectedTemplate.body[templateLanguage] || ''
+      if (subjectRef.current) subjectRef.current.innerHTML = templateToHtml(subjectRaw, false)
+      if (bodyRef.current) bodyRef.current.innerHTML = templateToHtml(bodyRaw, true)
     }
-  }, [selectedTemplate, templateLanguage])
+    // We intentionally exclude templateToHtml from deps to avoid resetting user edits when variables change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTemplate, templateLanguage, templatesData])
 
   // Mettre à jour les puces (chips) quand les variables changent
   useEffect(() => {
     updateChipValuesFromVariables(subjectRef.current)
     updateChipValuesFromVariables(bodyRef.current)
-  }, [variables])
+  }, [variables, updateChipValuesFromVariables])
 
   /**
    * 📋 FONCTION DE COPIE GRANULAIRE
@@ -433,7 +338,7 @@ function App() {
    * - Corps (vert) : Pour coller le contenu principal sans l'objet
    * - Tout (gradient) : Copie complète avec objet + corps (comportement original)
    */
-  const copyToClipboard = async (type = 'all') => {
+  const copyToClipboard = useCallback(async (type = 'all') => {
     let content = ''
     
     // 🎯 Sélection du contenu selon le type demandé
@@ -476,7 +381,7 @@ function App() {
       // 🚨 Gestion d'erreur avec message utilisateur
       alert('Erreur lors de la copie. Veuillez sélectionner le texte manuellement et utiliser Ctrl+C.')
     }
-  }
+  }, [])
 
   /**
    * 🔗 FONCTION DE COPIE DE LIEN DIRECT
@@ -752,33 +657,32 @@ function App() {
                           // Validation en temps réel
                           const getValidationStatus = () => {
                             if (isEmpty) return { valid: false, message: 'Requis' }
-                            
+
                             switch (varInfo.type) {
                               case 'email': {
                                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-                                return emailRegex.test(currentValue) 
+                                return emailRegex.test(currentValue)
                                   ? { valid: true, message: 'Valide' }
                                   : { valid: false, message: 'Format invalide' }
                               }
-                              
                               case 'phone': {
-                                const phoneRegex = /^[\d\s\-+()]{10,}$/
+                                // Allow digits, spaces, parentheses, plus, and hyphen (10+ chars)
+                                const phoneRegex = /^[\d\s()+-]{10,}$/
                                 return phoneRegex.test(currentValue)
                                   ? { valid: true, message: 'Valide' }
                                   : { valid: false, message: 'Format invalide' }
                               }
-                              
                               case 'number': {
                                 const isNumber = !isNaN(parseFloat(currentValue))
                                 return isNumber
                                   ? { valid: true, message: 'Valide' }
                                   : { valid: false, message: 'Nombre requis' }
                               }
-                              
-                              default:
-                                return currentValue.trim() 
+                              default: {
+                                return currentValue.trim()
                                   ? { valid: true, message: 'Valide' }
                                   : { valid: false, message: 'Non valide' }
+                              }
                             }
                           }
                           

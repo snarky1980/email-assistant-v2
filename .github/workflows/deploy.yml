@@ -28,13 +28,13 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
-
-      - name: Setup pnpm (via action)
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
+          cache-dependency-path: pnpm-lock.yaml
       - name: Enable Corepack
         run: corepack enable
+      - name: Show tool versions
+        run: |
+          node -v
+          pnpm -v
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
