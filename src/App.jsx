@@ -754,23 +754,26 @@ function App() {
                             if (isEmpty) return { valid: false, message: 'Requis' }
                             
                             switch (varInfo.type) {
-                              case 'email':
+                              case 'email': {
                                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
                                 return emailRegex.test(currentValue) 
                                   ? { valid: true, message: 'Valide' }
                                   : { valid: false, message: 'Format invalide' }
+                              }
                               
-                              case 'phone':
-                                const phoneRegex = /^[\d\s\-\+\(\)]{10,}$/
+                              case 'phone': {
+                                const phoneRegex = /^[\d\s\-+()]{10,}$/
                                 return phoneRegex.test(currentValue)
                                   ? { valid: true, message: 'Valide' }
                                   : { valid: false, message: 'Format invalide' }
+                              }
                               
-                              case 'number':
+                              case 'number': {
                                 const isNumber = !isNaN(parseFloat(currentValue))
                                 return isNumber
                                   ? { valid: true, message: 'Valide' }
                                   : { valid: false, message: 'Nombre requis' }
+                              }
                               
                               default:
                                 return currentValue.trim() 

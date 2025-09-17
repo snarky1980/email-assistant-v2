@@ -21,7 +21,7 @@ const EmailForm = ({ formData, selectedTemplate, onFormChange, onGenerate }) => 
   const [fieldErrors, setFieldErrors] = useState({});
   
   // État pour indiquer si le formulaire a été soumis
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [_isSubmitted, setIsSubmitted] = useState(false);
 
   /**
    * Valide un champ spécifique

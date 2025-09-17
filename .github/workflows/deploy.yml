@@ -48,7 +48,7 @@ jobs:
 
       - name: List build output (debug)
         run: |
-          echo "Built files in dist:" 
+          echo "Built files in dist:"
           ls -la dist
 
       - name: Upload artifact
